@@ -3,7 +3,7 @@
  */
 
 #include "application.h"
-#include "codeline_lntcp/codeline_lntcp.h"
+#include "codeline-lntcp/codeline-lntcp.h"
 
 typedef struct peerxfer_t {
     uint8_t command;
