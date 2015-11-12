@@ -3,7 +3,7 @@
  */
 
 #include "application.h"
-#include "ln.h"
+#include "codeline_lntcp/codeline_lntcp.h"
 
 typedef struct peerxfer_t {
     uint8_t command;
@@ -33,16 +33,15 @@ typedef struct peerxfer_t {
 // SPCoast codeline uses ONLY SV1 format packets, SO WE CAN "REUSE" THIS RESERVED BIT.
 // This DOES mean that no SV2-style devices can be allowed on this loconet.
 
-
-void code2LN(char *s, int *code, int src, int dst) {
+void codeline_lntcp::code2LN(char *s, int *code, int src, int dst) {
     char data[17];
-	data[ 0 ] = OPC_PEER_XFER ;
+	data[ 0 ] = codeline_lntcp::OPC_PEER_XFER ;
 	data[ 1 ] = 0x10;               // packet length = 16
 	data[ 2 ] = (src & 0x7F);       // SRC
 	data[ 3 ] = (dst & 0x7F);       // DSTL
 	data[ 4 ] = 0x00;               // must be 0x01 - 00=JMP debug
 
-	int pxct = PXCT1_RESERVED;  
+	int pxct = codeline_lntcp::PXCT1_RESERVED;  
 	if (code[0] & 0x80) pxct |= 0b0001;
 	if (code[1] & 0x80) pxct |= 0b0010;
 	if (code[2] & 0x80) pxct |= 0b0100;
@@ -78,7 +77,7 @@ void code2LN(char *s, int *code, int src, int dst) {
 
 
 // convenience wrapper arround strtok() - call first time with a string, the rest with NULL
-unsigned getValue(char *s) {
+unsigned codeline_lntcp::getValue(char *s) {
     static char buffer4strtok[80];
     char* myCopy;
     if (s) {
@@ -93,12 +92,11 @@ unsigned getValue(char *s) {
 // Parse a LoconetOverTCP string into components,
 // grab 8 data bytes and load into code array
 // This is probably better done with sscanf()
-
-int LN2code(char *s, int *code, int *opcode, int *src, int *dst) {
+int codeline_lntcp::LN2code(char *s, int *code, int *opcode, int *src, int *dst) {
     peerXferMsg pkt;
     *opcode  = getValue(s);
     
-    if (*opcode == 0xE5) {
+    if (*opcode == codeline_lntcp::OPC_PEER_XFER) {
         pkt.command   = *opcode;
         pkt.mesg_size = getValue(NULL);
         pkt.src       = getValue(NULL);     // source of transfer (0x00-0x7F)
